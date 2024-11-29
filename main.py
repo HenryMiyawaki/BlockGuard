@@ -103,7 +103,7 @@ class NeuralNetwork:
 def main():
     file_path = 'datasets/Merged_dataset/w1.csv'
     preprocessor = Preprocessor(file_path)
-    X_train, X_test, y_train, y_test = preprocessor.load_and_prepare_data()
+    X_train, X_test, y_train, y_test = preprocessor.process()
 
     X_train_tensor = torch.tensor(X_train, dtype=torch.float32)
     y_train_tensor = torch.tensor(y_train.values, dtype=torch.long)
