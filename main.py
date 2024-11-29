@@ -14,18 +14,30 @@ class Preprocessor:
         self.file_path = file_path
         self.test_size = test_size
         self.random_state = random_state
+        self.labels = []
         self.label_encoder = LabelEncoder()
         self.scaler = StandardScaler()
+        
+    def load_labels(self, path=None, labels=[]):
+        if labels:
+            self.labels = labels
+        elif path:
+            try:
+                self.labels = pd.read_csv(path).iloc[:, 0].tolist()
+            except Exception as e:
+                raise ValueError(f"Cannot load label in {path}: {e}")
+        else:
+            raise ValueError(f"No label provided. Please, prove an array or an path for a CSV containing the labels")
 
     def process(self):
+        if not self.labels:
+            raise ValueError("Labels not loaded, please load labels with method 'load_labels' and providing an label array or a path for CSV file.")
+        
         df = pd.read_csv(self.file_path)
-        labels = [
-            "duration", "protocol_type", "service", "src_bytes", "dst_bytes", "flag", "count", "srv_count", "serror_rate",
-            "same_srv_rate", "diff_srv_rate", "srv_serror_rate", "srv_diff_host_rate", "dst_host_count", 
-            "dst_host_srv_count", "dst_host_same_srv_rate", "dst_host_diff_srv_rate", "dst_host_same_src_port_rate",
-            "dst_host_serror_rate", "dst_host_srv_diff_host_rate", "dst_host_srv_serror_rate", "label"
-        ]
-        df.columns = labels
+        if len(df.columns) != len(self.labels):
+            raise ValueError("The number of columns does not match with the provided labels")
+        df.columns = self.labels
+        
         df['label_encoded'] = self.label_encoder.fit_transform(df['label'])
         X = df.drop(columns=['label', 'label_encoded'])
         y = df['label_encoded']
@@ -33,6 +45,24 @@ class Preprocessor:
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=self.test_size, 
                                                             stratify=y, random_state=self.random_state)
         return X_train, X_test, y_train, y_test
+    
+    def process_another_datasets(self, file_paths):
+        if not self.labels:
+            raise ValueError("The labels need to be proccesed before adding another datasets.")
+        datasets = []
+        for file_path in file_paths:
+            df = pd.read_csv(file_path)
+            if len(df.columns) != len(self.labels):
+                raise ValueError(f"The number of columns in the file {file_path} does not match with the provided labels.")
+            df.columns = self.labels
+
+            df['label_encoded'] = self.label_encoder.transform(df['label'])
+            X = df.drop(columns=['label', 'label_encoded'])
+            y = df['label_encoded']
+            X = self.scaler.transform(X.select_dtypes(include=['float64', 'int64']))  # Usa o scaler ajustado
+            datasets.append((torch.tensor(X, dtype=torch.float32), torch.tensor(y.values, dtype=torch.long)))
+        
+        return datasets
 
 
 class NeuralNetwork:
@@ -103,6 +133,12 @@ class NeuralNetwork:
 def main():
     file_path = 'datasets/Merged_dataset/w1.csv'
     preprocessor = Preprocessor(file_path)
+    preprocessor.load_labels(labels=[
+            "duration", "protocol_type", "service", "src_bytes", "dst_bytes", "flag", "count", "srv_count", "serror_rate",
+            "same_srv_rate", "diff_srv_rate", "srv_serror_rate", "srv_diff_host_rate", "dst_host_count", 
+            "dst_host_srv_count", "dst_host_same_srv_rate", "dst_host_diff_srv_rate", "dst_host_same_src_port_rate",
+            "dst_host_serror_rate", "dst_host_srv_diff_host_rate", "dst_host_srv_serror_rate", "label"
+        ])
     X_train, X_test, y_train, y_test = preprocessor.process()
 
     X_train_tensor = torch.tensor(X_train, dtype=torch.float32)
