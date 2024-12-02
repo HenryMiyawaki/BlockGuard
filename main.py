@@ -71,23 +71,29 @@ class NeuralNetwork:
         self.model = self._build_model(input_size, num_classes).to(device)
         self.criterion = nn.CrossEntropyLoss()
         self.optimizer = optim.Adam(self.model.parameters(), lr=0.001)
+        self.scheduler = optim.lr_scheduler.ReduceLROnPlateau(self.optimizer, 'min', patience=3, factor=0.5)
         self.train_losses = []
 
     def _build_model(self, input_size, num_classes):
         class NeuralNet(nn.Module):
             def __init__(self, input_size, num_classes):
                 super(NeuralNet, self).__init__()
-                self.fc1 = nn.Linear(input_size, 64)
-                self.fc2 = nn.Linear(64, 32)
-                self.fc3 = nn.Linear(32, num_classes)
+                self.fc1 = nn.Linear(input_size, 128)
+                self.bn1 = nn.BatchNorm1d(128)
+                self.fc2 = nn.Linear(128, 64)
+                self.bn2 = nn.BatchNorm1d(64)
+                self.fc3 = nn.Linear(64, 32)
+                self.bn3 = nn.BatchNorm1d(32)
+                self.fc4 = nn.Linear(32, num_classes)
                 self.dropout = nn.Dropout(0.5)
 
             def forward(self, x):
-                x = F.relu(self.fc1(x))
+                x = F.relu(self.bn1(self.fc1(x)))
                 x = self.dropout(x)
-                x = F.relu(self.fc2(x))
+                x = F.relu(self.bn2(self.fc2(x))) 
                 x = self.dropout(x)
-                x = self.fc3(x)
+                x = F.relu(self.bn3(self.fc3(x))) 
+                x = self.fc4(x)
                 return x
         return NeuralNet(input_size, num_classes)
 
@@ -105,6 +111,7 @@ class NeuralNetwork:
                 running_loss += loss.item()
             avg_loss = running_loss / len(train_loader)
             self.train_losses.append(avg_loss)
+            self.scheduler.step(avg_loss)
             print(f"Epoch [{epoch+1}/{num_epochs}], Loss: {avg_loss:.4f}")
 
     def evaluate(self, test_loader):
