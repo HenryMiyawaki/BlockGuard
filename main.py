@@ -85,7 +85,7 @@ class NeuralNetwork:
                 self.fc3 = nn.Linear(64, 32)
                 self.bn3 = nn.BatchNorm1d(32)
                 self.fc4 = nn.Linear(32, num_classes)
-                self.dropout = nn.Dropout(0.5)
+                self.dropout = nn.Dropout(0.4)
 
             def forward(self, x):
                 x = F.relu(self.bn1(self.fc1(x)))
