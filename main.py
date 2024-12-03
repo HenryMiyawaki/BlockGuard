@@ -1,5 +1,6 @@
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder, StandardScaler, MinMaxScaler
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 from sklearn.model_selection import train_test_split
 import torch
 from torch.utils.data import DataLoader, TensorDataset
@@ -7,6 +8,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 import matplotlib.pyplot as plt
+from sklearn.metrics import roc_curve, auc
+from sklearn.preprocessing import label_binarize
+import numpy as np
 
 
 class Preprocessor:
@@ -98,9 +102,14 @@ class NeuralNetwork:
         return NeuralNet(input_size, num_classes)
 
     def train(self, train_loader, num_epochs=20):
+        best_loss = float('inf')
+        patience = 5
+        patience_counter = 0
+
         for epoch in range(num_epochs):
             self.model.train()
             running_loss = 0.0
+
             for X_batch, y_batch in train_loader:
                 X_batch, y_batch = X_batch.to(self.device), y_batch.to(self.device)
                 outputs = self.model(X_batch)
@@ -109,8 +118,20 @@ class NeuralNetwork:
                 loss.backward()
                 self.optimizer.step()
                 running_loss += loss.item()
+
             avg_loss = running_loss / len(train_loader)
             self.train_losses.append(avg_loss)
+
+            
+            if avg_loss < best_loss:
+                best_loss = avg_loss
+                patience_counter = 0
+            else:
+                patience_counter += 1
+                if patience_counter >= patience:
+                    print("Early stopping triggered!")
+                    break
+
             self.scheduler.step(avg_loss)
             print(f"Epoch [{epoch+1}/{num_epochs}], Loss: {avg_loss:.4f}")
 
@@ -136,9 +157,49 @@ class NeuralNetwork:
         plt.grid(True)
         plt.show()
 
+    @staticmethod
+    def plot_confusion_matrix(y_true, y_pred, label_encoder):
+        cm = confusion_matrix(y_true, y_pred)
+        disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=label_encoder.classes_)
+        disp.plot(cmap=plt.cm.Blues)
+        plt.title("Confusion Matrix")
+        plt.show()
+    
+    @staticmethod
+    def plot_roc_curve(y_true, y_scores, num_classes):
+        y_true_bin = label_binarize(y_true, classes=range(num_classes))
+        plt.figure(figsize=(10, 6))
+        for i in range(num_classes):
+            fpr, tpr, _ = roc_curve(y_true_bin[:, i], y_scores[:, i])
+            roc_auc = auc(fpr, tpr)
+            plt.plot(fpr, tpr, label=f'Class {i} (AUC = {roc_auc:.2f})')
+
+        plt.plot([0, 1], [0, 1], 'k--', label='Random Guess')
+        plt.xlabel('False Positive Rate')
+        plt.ylabel('True Positive Rate')
+        plt.title('ROC Curve')
+        plt.legend()
+        plt.grid(True)
+        plt.show()
+
+    @staticmethod
+    def plot_class_distribution(y_true, y_pred, label_encoder):
+        results = pd.DataFrame({'True': y_true, 'Predicted': y_pred})
+        results['Correct'] = results['True'] == results['Predicted']
+
+        summary = results.groupby('True')['Correct'].value_counts().unstack(fill_value=0)
+        summary.columns = ['Incorrect', 'Correct']
+
+        summary.plot(kind='bar', stacked=True, figsize=(10, 6), colormap='viridis')
+        plt.xlabel('Class')
+        plt.ylabel('Count')
+        plt.title('Prediction Accuracy by Class')
+        plt.xticks(range(len(label_encoder.classes_)), label_encoder.classes_, rotation=45)
+        plt.legend(title='Prediction')
+        plt.show()
 
 def main():
-    file_path = 'datasets/Merged_dataset/w1.csv'
+    file_path = 'datasets/Merged_dataset/w_all.csv'
     preprocessor = Preprocessor(file_path)
     preprocessor.load_labels(labels=[
             "duration", "protocol_type", "service", "src_bytes", "dst_bytes", "flag", "count", "srv_count", "serror_rate",
@@ -160,13 +221,36 @@ def main():
 
     input_size = X_train.shape[1]
     num_classes = len(preprocessor.label_encoder.classes_)
+
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+   
+    network = NeuralNetwork(input_size, num_classes, device)
 
-    model = NeuralNetwork(input_size, num_classes, device)
+    network.train(train_loader, num_epochs=20)
 
-    model.train(train_loader, num_epochs=20)
-    model.evaluate(test_loader)
-    model.plot_training_loss()
+    network.evaluate(test_loader)
+
+    network.plot_training_loss()
+
+    y_pred = []
+    y_scores = []
+    network.model.eval()
+    with torch.no_grad():
+        for X_batch, _ in test_loader:
+            X_batch = X_batch.to(device)
+            outputs = network.model(X_batch)
+            y_scores.extend(outputs.cpu().numpy())
+            _, predicted = torch.max(outputs, 1)
+            y_pred.extend(predicted.cpu().numpy())
+
+    y_pred = np.array(y_pred)
+    y_scores = np.array(y_scores)
+
+    network.plot_confusion_matrix(y_test, y_pred, preprocessor.label_encoder)
+
+    network.plot_roc_curve(y_test, y_scores, num_classes)
+
+    network.plot_class_distribution(y_test, y_pred, preprocessor.label_encoder)
 
 
 if __name__ == '__main__':
