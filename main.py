@@ -70,7 +70,7 @@ class NeuralNetwork:
         self.device = device
         self.model = self._build_model(input_size, num_classes).to(device)
         self.criterion = nn.CrossEntropyLoss()
-        self.optimizer = optim.Adam(self.model.parameters(), lr=0.001)
+        self.optimizer = optim.Adam(self.model.parameters(), lr=0.001, weight_decay=1e-5)
         self.scheduler = optim.lr_scheduler.ReduceLROnPlateau(self.optimizer, 'min', patience=3, factor=0.5)
         self.train_losses = []
 
