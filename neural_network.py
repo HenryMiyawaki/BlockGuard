@@ -39,7 +39,7 @@ class NeuralNetwork:
                 return x
         return NeuralNet(input_size, num_classes)
 
-    def train(self, train_loader, num_epochs=20):
+    def train(self, train_loader, num_epochs=5):
         best_loss = float('inf')
         patience = 5
         patience_counter = 0
