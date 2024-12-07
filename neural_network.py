@@ -38,6 +38,41 @@ class NeuralNetwork:
                 x = self.fc4(x)
                 return x
         return NeuralNet(input_size, num_classes)
+    
+    def distillation_loss(self, student_logits, teacher_logits, labels, temperature, alpha):
+        soft_teacher = F.softmax(teacher_logits / temperature, dim=1)
+        soft_student = F.log_softmax(student_logits / temperature, dim=1)
+
+        distillation_loss = F.kl_div(soft_student, soft_teacher, reduction='batchmean') * (temperature ** 2)
+
+        ce_loss = self.criterion(student_logits, labels)
+
+        return alpha * distillation_loss + (1 - alpha) * ce_loss
+
+    def train_with_distillation(self, train_loader, teacher_logits, num_epochs=5, temperature=3.0, alpha=0.5):
+        self.model.train()
+
+        for epoch in range(num_epochs):
+            running_loss = 0.0
+            for i, (X_batch, y_batch) in enumerate(train_loader):
+                X_batch, y_batch = X_batch.to(self.device), y_batch.to(self.device)
+
+                batch_teacher_logits = teacher_logits[i * len(y_batch):(i + 1) * len(y_batch)].to(self.device)
+
+                student_logits = self.model(X_batch)
+
+                loss = self.distillation_loss(student_logits, batch_teacher_logits, y_batch, temperature, alpha)
+
+                self.optimizer.zero_grad()
+                loss.backward()
+                self.optimizer.step()
+
+                running_loss += loss.item()
+
+            avg_loss = running_loss / len(train_loader)
+            self.train_losses.append(avg_loss)
+            self.scheduler.step(avg_loss)
+            print(f"Epoch [{epoch+1}/{num_epochs}], Loss: {avg_loss:.4f}")
 
     def train(self, train_loader, num_epochs=5):
         best_loss = float('inf')
