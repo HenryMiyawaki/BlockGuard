@@ -56,7 +56,7 @@ def main():
 
     network.plot_confusion_matrix(y_test, y_pred, preprocessor.label_encoder)
 
-    network.plot_roc_curve(y_test, y_scores, num_classes)
+    network.plot_roc_curve(y_test, y_scores, num_classes, classes=preprocessor.label_encoder.classes_)
 
     network.plot_class_distribution(y_test, y_pred, preprocessor.label_encoder)
 

@@ -104,13 +104,18 @@ class NeuralNetwork:
         plt.show()
     
     @staticmethod
-    def plot_roc_curve(y_true, y_scores, num_classes):
+    def plot_roc_curve(y_true, y_scores, num_classes, classes=[]):
         y_true_bin = label_binarize(y_true, classes=range(num_classes))
+        if(len(classes) != num_classes):
+            classes = []
         plt.figure(figsize=(10, 6))
         for i in range(num_classes):
             fpr, tpr, _ = roc_curve(y_true_bin[:, i], y_scores[:, i])
             roc_auc = auc(fpr, tpr)
-            plt.plot(fpr, tpr, label=f'Class {i} (AUC = {roc_auc:.2f})')
+            if (len(classes) > 0):
+                plt.plot(fpr, tpr, label=f'Class {classes[i]} (AUC = {roc_auc:.2f})')
+            else:
+                plt.plot(fpr, tpr, label=f'Class {i} (AUC = {roc_auc:.2f})')
 
         plt.plot([0, 1], [0, 1], 'k--', label='Random Guess')
         plt.xlabel('False Positive Rate')
