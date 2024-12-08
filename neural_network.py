@@ -57,12 +57,17 @@ class NeuralNetwork:
             for i, (X_batch, y_batch) in enumerate(train_loader):
                 X_batch, y_batch = X_batch.to(self.device), y_batch.to(self.device)
 
-                batch_teacher_logits = teacher_logits[i * len(y_batch):(i + 1) * len(y_batch)].to(self.device)
+                # Ajuste para garantir que o teacher_logits corresponda ao mesmo lote
+                start_idx = i * len(y_batch)
+                end_idx = (i + 1) * len(y_batch)
+                batch_teacher_logits = teacher_logits[start_idx:end_idx].to(self.device)
 
                 student_logits = self.model(X_batch)
 
+                # Calcular a perda
                 loss = self.distillation_loss(student_logits, batch_teacher_logits, y_batch, temperature, alpha)
 
+                # Backpropagation
                 self.optimizer.zero_grad()
                 loss.backward()
                 self.optimizer.step()
@@ -119,16 +124,29 @@ class NeuralNetwork:
                 total += y_batch.size(0)
                 correct += (predicted == y_batch).sum().item()
         accuracy = 100 * correct / total
-        print(f"Test Accuracy: {accuracy:.2f}%")
+        
         return accuracy
 
+    def get_teacher_logits(self, data_loader):
+        self.model.eval()
+        logits_list = []
+        total_samples = 0
+        with torch.no_grad():
+            for X_batch, _ in data_loader:
+                X_batch = X_batch.to(self.device)
+                logits = self.model(X_batch)
+                logits_list.append(logits)
+                total_samples += X_batch.size(0)
+        return torch.cat(logits_list), total_samples
+    
     def plot_training_loss(self):
         df_metrics = pd.DataFrame({'Epoch': range(1, len(self.train_losses) + 1), 'Loss': self.train_losses})
         df_metrics.plot(x='Epoch', y='Loss', kind='line', title='Training Loss', legend=True)
         plt.xlabel('Epochs')
         plt.ylabel('Loss')
         plt.grid(True)
-        plt.show()
+        return plt
+
 
     @staticmethod
     def plot_confusion_matrix(y_true, y_pred, label_encoder):
@@ -136,7 +154,8 @@ class NeuralNetwork:
         disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=label_encoder.classes_)
         disp.plot(cmap=plt.cm.Blues)
         plt.title("Confusion Matrix")
-        plt.show()
+        return plt
+
     
     @staticmethod
     def plot_roc_curve(y_true, y_scores, num_classes, classes=[]):
@@ -158,7 +177,8 @@ class NeuralNetwork:
         plt.title('ROC Curve')
         plt.legend()
         plt.grid(True)
-        plt.show()
+        return plt
+
 
     @staticmethod
     def plot_class_distribution(y_true, y_pred, label_encoder):
@@ -174,4 +194,4 @@ class NeuralNetwork:
         plt.title('Prediction Accuracy by Class')
         plt.xticks(range(len(label_encoder.classes_)), label_encoder.classes_, rotation=45)
         plt.legend(title='Prediction')
-        plt.show()
+        return plt
