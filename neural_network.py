@@ -56,18 +56,15 @@ class NeuralNetwork:
             running_loss = 0.0
             for i, (X_batch, y_batch) in enumerate(train_loader):
                 X_batch, y_batch = X_batch.to(self.device), y_batch.to(self.device)
-
-                # Ajuste para garantir que o teacher_logits corresponda ao mesmo lote
+                
                 start_idx = i * len(y_batch)
                 end_idx = (i + 1) * len(y_batch)
                 batch_teacher_logits = teacher_logits[start_idx:end_idx].to(self.device)
 
                 student_logits = self.model(X_batch)
 
-                # Calcular a perda
                 loss = self.distillation_loss(student_logits, batch_teacher_logits, y_batch, temperature, alpha)
 
-                # Backpropagation
                 self.optimizer.zero_grad()
                 loss.backward()
                 self.optimizer.step()

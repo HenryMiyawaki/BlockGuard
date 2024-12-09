@@ -76,8 +76,8 @@ class Preprocessor:
         elif noise_type == 'salt_pepper':
             X_noisy = X.copy()
             n_samples, n_features = X.shape
-            n_salt = int(noise_level * X.size * 0.5)  # 50% salt
-            n_pepper = int(noise_level * X.size * 0.5)  # 50% pepper
+            n_salt = int(noise_level * X.size * 0.5)
+            n_pepper = int(noise_level * X.size * 0.5)
 
             coords = [np.random.randint(0, i - 1, n_salt) for i in X.shape]
             X_noisy[coords] = X.max()
