@@ -1,4 +1,4 @@
-# Blockchain Attack Detection with Machine Learning
+# Detecção de Ataques em Blockchain com Aprendizado de Máquina
 
 ## Description
 
