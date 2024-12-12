@@ -1,5 +1,7 @@
 # Detecção de Ataques em Blockchain com Aprendizado de Máquina
 
+![](https://img.shields.io/badge/Code-Python-informational?style=for-the-badge&logo=python&logoColor=white&color=BD2A95)
+
 ## 1️⃣ Introdução
 
 As redes e sistemas descentralizados como blockchain, têm ganhado destaque como uma alternativa eficiente e inovadora em um mundo cada vez mais preocupado com privacidade e autonomia ao se destacarem por: 
@@ -22,15 +24,31 @@ Propomos, assim, um modelo que com os seguintes objetivos
 
 ## 3️⃣ Metodologia 
 
-Foi delimitado nosso problematica como um problema de **Classificação** onde seria necessario a partir de variaveis independentes classificar uma certa requisição em 4 categorias.
+Foi delimitado nossa problematica como um problema de **Classificação** onde seria necessario a partir de variaveis independentes classificar uma certa requisição em 4 categorias.
 
-### Dataset
+### 📈 Dataset
 
-Para esse projeto, o dataset escolhido foi o BNaTD (Blockchain Netowk Attack Traffic Dataset) uma base de dados coletados de nós **Ethereum** que contêm os ataques listados nos objetivos.
+O dataset escolhido foi o BNaT Dataset (Blockchain Network Attack Traffic Dataset) uma base de dados coletados de nós **Ethereum** que contêm os ataques listados nos objetivos.
 
-### Modelo
+-> [Conheça o BNaT Dataset](https://paperswithcode.com/dataset/bnat)
 
-### Pré-processamento
+### 💻 Modelo
+
+Para resolver o problema de classificação foi escolhido criar um modelo de **Rede Neural** devido a quantidade de itens para serem classificados, flexibilidade que uma rede neural pode ofererecer.
+
+> Foi utilizado as seguintes ferramentas para a criação da rede: 
+> - Python 3.12.4
+> - Pytorch
+> - Scikit-learn
+> - Numpy
+> - Pandas
+
+### 📊 Pré-processamento
+
+> Para melhorar a qualidade e divisão dos dados, foi adotada as seguintes técnicas: 
+> - Estratificação para a separação dos conjuntos de treino e teste
+> - **Transformação** matrizes de mútiplas dimensões para **vectorized operation**
+> - Carregamento dos dados em lotes (batches embaralhados de 32 amostras)
 
 ### Rede Neural
 
