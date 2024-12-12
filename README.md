@@ -56,7 +56,7 @@ Para resolver o problema de classificação foi escolhido criar um modelo de **R
 
 A rede neural foi construida da seguinte forma:
 
-**3.1 Topologia**
+#### **3.1 Topologia**
 > - A primeira camada é totalmente conectada (linear) transforma a entrada de dimensão N em uma sáida de 128 Neurônios.
 > - A segunda camada também totalmente conectada porém reduz de 128 neurônios para 64.
 > - A terceira camada totalmente conectada reduz a dimensão de 64 para 32 neurônios.
@@ -67,7 +67,7 @@ Todas as camadas seguem os seguintes passos:
 > 2. Sofrem uma normalização em lotes
 > 3. É aplicado a função de ativação ReLU (Rectified Linear Unit)
 
-**3.2 Função de Perda e Otimizador**
+#### **3.2 Função de Perda e Otimizador**
 ```diff
 - Para calcular a perda da rede foi utilizado o Cross-Entropy-Loss. 
 + Para otimizar o modelo foi escolhido o Adaptive Moment Estimation (ADAM).
@@ -93,11 +93,22 @@ Durante o processo de treino funcionalidades especificas sáo atividas usadas co
 5. -> Calculamos a perda do lote e a perda médoa da época
 6. -> Por fim é verificado a condição de **Early Stopping**
 
-## Peer Network
+## 5️⃣ Peer Network
 
-## Vantagens do Peer Network
+## 6️⃣ Vantagens do Peer Network
 
-## Resultados
+## 7️⃣ Resultados
+
+Os resultados obtidos podem ser observados nos seguintes gráficos.
+
+> ### ROC Curve
+> <img src="/results/roc_curve.png" alt="Descrição da imagem" width="600">
+> 
+> ### Class Distribution
+> <img src="/results/class_distribution.png" alt="Descrição da imagem" width="600">
+> 
+> ### Confusion Matrix
+> <img src="/results/confusion_matrix.png" alt="Descrição da imagem" width="600">
 
 # Contribuidores
 - [Felipe Nunes Melo](https://github.com/felipemelonunes09)
