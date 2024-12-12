@@ -86,7 +86,12 @@ Todas as camadas seguem os seguintes passos:
 > Para o processo de treinamento foi definido um mecanismo de **Early Stopping** que interrome o treinamento caso o demolo não apresente melhorias consecutivas em um determiando número de épocas.
 
 Durante o processo de treino funcionalidades especificas sáo atividas usadas como **dropout** e **normalização**
-1. Para cada iteração, moveremos os dados do batch 
+1. -> Para cada iteração moveremos os dados do batch para o dispositivo para a CPU ou GPU (CUDA)
+2. -> Calcula-se a saída do modelo e a perda associada
+3. -> É **zerado** os gradientes acumulados
+4. -> Utilizamos as perdas calculadas para calcular o gradiente dos parâmetros do modelo.
+5. -> Calculamos a perda do lote e a perda médoa da época
+6. -> Por fim é verificado a condição de **Early Stopping**
 
 ## Peer Network
 
