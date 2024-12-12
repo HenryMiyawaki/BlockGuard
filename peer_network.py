@@ -152,14 +152,11 @@ class PeerNetwork:
         self.seed_preprocessor.save_plot(plt_class, path, "class_distribution")
 
     def plot_graph_metrics(self, metric_key=None, title=None):
-        try:
-            metrics = Metrics(graph=self.graph)
+        metrics = Metrics(graph=self.graph)
 
-            if metric_key == None and title == None:
-                plt_graph = metrics.plot_graph_evolution()
-            else:
-                plt_graph = metrics.plot_graph_evolution(metric_key=metric_key or None, title=title or None)
+        if metric_key == None and title == None:
+            plt_graph = metrics.plot_graph_evolution()
+        else:
+            plt_graph = metrics.plot_graph_evolution(metric_key=metric_key or None, title=title or None)
 
-            self.seed_preprocessor.save_plot(plt_graph, name="class_distribution")
-        except Exception as e:
-            print(f"Error during graph plot: {e}")
+        self.seed_preprocessor.save_plot(plt_graph, name="class_distribution")
