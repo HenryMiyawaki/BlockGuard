@@ -128,6 +128,8 @@ As seguintes vantagens podem ser alcançadas com o Peer-Network sendo elas:
 + Validação Contínua que permite que cada peer avalie e melhore o desempenho do seu modelo.
 
 + Evolução de conhecimento com base nas interações entre os peers permitindo a adaptabilidade a novos dados que os peers são expostos.
+
++ Anonimato e proteção dos dados
 ```
 
 ## 7️⃣ Resultados
