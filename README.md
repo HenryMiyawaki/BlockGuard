@@ -1,5 +1,7 @@
 # Detecção de Ataques em Blockchain com Aprendizado de Máquina
 
+Status: ✅ Completo
+
 ![](https://img.shields.io/badge/Code-Python-informational?style=for-the-badge&logo=python&logoColor=white&color=BD2A95)
 
 ## 1️⃣ Introdução
@@ -50,14 +52,48 @@ Para resolver o problema de classificação foi escolhido criar um modelo de **R
 > - **Transformação** matrizes de mútiplas dimensões para **vectorized operation**
 > - Carregamento dos dados em lotes (batches embaralhados de 32 amostras)
 
-### Rede Neural
+### 🧠 Rede Neural
 
-### Knowledge Distillation
+A rede neural foi construida da seguinte forma:
 
-## Treinamento
+**3.1 Topologia**
+> - A primeira camada é totalmente conectada (linear) transforma a entrada de dimensão N em uma sáida de 128 Neurônios.
+> - A segunda camada também totalmente conectada porém reduz de 128 neurônios para 64.
+> - A terceira camada totalmente conectada reduz a dimensão de 64 para 32 neurônios.
+> - Por fim, a camada de saída reduz os 32 neurônios para o número de classes do problema de classificação.
+
+Todas as camadas seguem os seguintes passos:
+> 1. Os dados passame pela camada linear
+> 2. Sofrem uma normalização em lotes
+> 3. É aplicado a função de ativação ReLU (Rectified Linear Unit)
+
+**3.2 Função de Perda e Otimizador**
+```diff
+- Para calcular a perda da rede foi utilizado o Cross-Entropy-Loss. 
++ Para otimizar o modelo foi escolhido o Adaptive Moment Estimation (ADAM).
++ Scheduler foi usado para ajsutar dinamicamente a taxa de aprendizado.
+- Caso 3 épocas consecutivas sem progresso é aplicado um fator de 0.5 na taxa de aprendizado.
+```
+***
+
+| 💾 Taxa de aprendizado       | 📐Regularização   |
+| -----------                  | -----------        |
+| 0.001                        | **L1 (Lasso)**     |
+
+
+## 4️⃣ Treinamento
+
+> Para o processo de treinamento foi definido um mecanismo de **Early Stopping** que interrome o treinamento caso o demolo não apresente melhorias consecutivas em um determiando número de épocas.
+
+Durante o processo de treino funcionalidades especificas sáo atividas usadas como **dropout** e **normalização**
+1. Para cada iteração, moveremos os dados do batch 
 
 ## Peer Network
 
 ## Vantagens do Peer Network
 
 ## Resultados
+
+# Contribuidores
+- [Felipe Nunes Melo](https://github.com/felipemelonunes09)
+- [Henry Miyawaki](https://github.com/HenryMiyawaki)
