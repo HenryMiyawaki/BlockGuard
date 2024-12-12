@@ -110,7 +110,7 @@ Durante o processo de treino funcionalidades específicas são ativadas usadas c
 >    - 👩🏿‍🏫 Teacher (Modelo mais complexo) fornece feedback para o modelo menos treinado
 >    - 🧑🏻‍🎓 Student (Modelo menos complexo) aprende com as previsões e parâmetros do Teacher
 > 7. Evolução e Atualização
->    - Após a atualização modelo é permitido que o conhecimento de propague pela rede
+>    - Após a atualização modelo é permitido que o conhecimento se propague pela rede
 > 9. Validação de Teste Descentralizada
 >    - Para garantir que a evolução dos modelos seja efetiva, cada peer realiza testes de validação de forma local
 > 11. Ajuste de Parâmetros e Estratégias de Colaboração
