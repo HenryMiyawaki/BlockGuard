@@ -159,4 +159,4 @@ class PeerNetwork:
         else:
             plt_graph = metrics.plot_graph_evolution(metric_key=metric_key or None, title=title or None)
 
-        self.seed_preprocessor.save_plot(plt_graph, name="class_distribution")
+        self.seed_preprocessor.save_plot(plt_graph, save_path="results/graph", name="class_distribution")
