@@ -1,9 +1,11 @@
+import os
 import numpy as np
 from sklearn.calibration import LabelEncoder
 from sklearn.discriminant_analysis import StandardScaler
 import pandas as pd
 from sklearn.model_selection import train_test_split
 import torch
+from torch.utils.data import DataLoader, TensorDataset
 
 class Preprocessor:
     def __init__(self, file_path, test_size=0.2, random_state=42):
@@ -14,7 +16,12 @@ class Preprocessor:
         self.label_encoder = LabelEncoder()
         self.scaler = StandardScaler()
         
-    def load_labels(self, path=None, labels=[]):
+    def load_labels(self, path=None, labels=[
+                "duration", "protocol_type", "service", "src_bytes", "dst_bytes", "flag", "count", "srv_count", "serror_rate",
+                "same_srv_rate", "diff_srv_rate", "srv_serror_rate", "srv_diff_host_rate", "dst_host_count", 
+                "dst_host_srv_count", "dst_host_same_srv_rate", "dst_host_diff_srv_rate", "dst_host_same_src_port_rate",
+                "dst_host_serror_rate", "dst_host_srv_diff_host_rate", "dst_host_srv_serror_rate", "label"
+            ]):
         if labels:
             self.labels = labels
         elif path:
@@ -108,6 +115,20 @@ class Preprocessor:
         X_noisy = self.add_noise(X, noise_type=noise_type, noise_level=noise_level)
 
         return X_noisy, y
+    
+    def create_loaders(self, X_train, y_train, X_test, y_test):
+        X_train_tensor = torch.tensor(X_train, dtype=torch.float32)
+        y_train_tensor = torch.tensor(y_train.values, dtype=torch.long)
+        X_test_tensor = torch.tensor(X_test, dtype=torch.float32)
+        y_test_tensor = torch.tensor(y_test.values, dtype=torch.long)
+
+        train_dataset = TensorDataset(X_train_tensor, y_train_tensor)
+        test_dataset = TensorDataset(X_test_tensor, y_test_tensor)
+
+        train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
+        test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
+
+        return train_loader, test_loader
 
     def generate_synthetic_dataset(self, noise_type='gaussian', noise_level=0.01):
         X_noisy, y = self.process_with_noise(noise_type=noise_type, noise_level=noise_level)
@@ -115,3 +136,13 @@ class Preprocessor:
         df_noisy['label'] = self.label_encoder.inverse_transform(y)
         
         return df_noisy
+    
+    def save_plot(self, plt, save_path, name):
+    
+        os.makedirs(save_path, exist_ok=True)
+        
+        file_path = os.path.join(save_path, name + '.png')
+        
+        plt.savefig(file_path)
+
+        plt.close()
