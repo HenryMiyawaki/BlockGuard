@@ -17,7 +17,7 @@ class PeerNetwork:
         
         
     def initialize_seed_model(self):
-        file_path = 'datasets/Worker_1_+_2/FL/test_w2.csv'
+        file_path = 'datasets\Merged_dataset\w1_incomplete.csv'
         
         preprocessor = Preprocessor(file_path)
         preprocessor.load_labels()
@@ -45,7 +45,8 @@ class PeerNetwork:
         paths = [
             "datasets/Merged_dataset/w_all.csv", 
             "datasets/Merged_dataset/w1.csv", 
-            "datasets/Worker_1_+_2/DL/DL_2_train.csv"
+            "datasets/Worker_1_+_2_+_3/DL/DL_test.csv",
+            "datasets/Worker_1_+_2/FL/test_w2.csv"
         ]
 
         for i in range(5):
@@ -62,8 +63,7 @@ class PeerNetwork:
                 train_loader=train_loader,
                 local_test=test_loader,
                 seed_test_loader=self.test_loader,
-                y_test_local=y_test,
-                local_accuracy=self.seed_accuracy
+                y_test_local=y_test
             )
 
 
@@ -89,12 +89,13 @@ class PeerNetwork:
                 teacher_accuracy = (teacher_model.evaluate(self.graph.nodes[teacher_node]['local_test']) + teacher_model.evaluate(self.test_loader))/2
 
                 if student_accuracy > teacher_accuracy:
-                    print(f"\n---Skipped training for Node {student_node}---\n")
+                    print(f"\n---Skipped training for Node {student_node}---")
                     continue
 
                 print(f"Evaluating student model BEFORE distillation (Node {student_node}):")
                 accuracy = student_model.evaluate(self.graph.nodes[student_node]['local_test'])
                 print(f"Accuracy is {accuracy:.2f}%")
+                
 
                 teacher_logits = []
                 teacher_model.model.eval()
@@ -115,10 +116,11 @@ class PeerNetwork:
                     temperature=temperature,
                     alpha=alpha
                 )
-
+                
                 print(f"Evaluating student model AFTER distillation (Node {student_node}):")
                 accuracy = student_model.evaluate(self.graph.nodes[student_node]['local_test'])
                 print(f"Accuracy is {accuracy:.2f}%")
+                
         
     def plot_metrics(self, model, test_loader, y_test, path="results"):
         metrics = Metrics(model)
@@ -150,13 +152,3 @@ class PeerNetwork:
         plt_class = metrics.plot_class_distribution(y_test, y_pred, self.seed_preprocessor.label_encoder)
 
         self.seed_preprocessor.save_plot(plt_class, path, "class_distribution")
-
-    def plot_graph_metrics(self, metric_key=None, title=None):
-        metrics = Metrics(graph=self.graph)
-
-        if metric_key == None and title == None:
-            plt_graph = metrics.plot_graph_evolution()
-        else:
-            plt_graph = metrics.plot_graph_evolution(metric_key=metric_key or None, title=title or None)
-
-        self.seed_preprocessor.save_plot(plt_graph, save_path="results/graph", name="class_distribution")
