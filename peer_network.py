@@ -12,7 +12,7 @@ class PeerNetwork:
         
         self.num_classes = 0
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        self.seed_model, self.test_loader = self.initialize_seed_model()
+        self.seed_model, self.test_loader, self.seed_accuracy = self.initialize_seed_model()
         self.graph = self.create_graph()
         
         
@@ -34,7 +34,11 @@ class PeerNetwork:
 
         self.plot_metrics(seed_model, test_loader, y_test)
 
-        return seed_model, test_loader
+        seed_accuracy = seed_model.evaluate(train_loader)
+        print(f"Accuracy of models at nodes (have the same model) for seed test: {seed_accuracy:.2f}% \n -----------------------------------\n")
+        print("\n--- Plotting for each node ---")
+
+        return seed_model, test_loader, seed_accuracy
 
     def create_graph(self):
         graph = nx.Graph()
@@ -58,7 +62,8 @@ class PeerNetwork:
                 train_loader=train_loader,
                 local_test=test_loader,
                 seed_test_loader=self.test_loader,
-                y_test_local=y_test
+                y_test_local=y_test,
+                local_accuracy=self.seed_accuracy
             )
 
 
@@ -145,3 +150,16 @@ class PeerNetwork:
         plt_class = metrics.plot_class_distribution(y_test, y_pred, self.seed_preprocessor.label_encoder)
 
         self.seed_preprocessor.save_plot(plt_class, path, "class_distribution")
+
+    def plot_graph_metrics(self, metric_key=None, title=None):
+        try:
+            metrics = Metrics(graph=self.graph)
+
+            if metric_key == None and title == None:
+                plt_graph = metrics.plot_graph_evolution()
+            else:
+                plt_graph = metrics.plot_graph_evolution(metric_key=metric_key or None, title=title or None)
+
+            self.seed_preprocessor.save_plot(plt_graph, name="class_distribution")
+        except Exception as e:
+            print(f"Error during graph plot: {e}")

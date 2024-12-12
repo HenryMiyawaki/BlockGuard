@@ -7,12 +7,31 @@ from neural_network import NeuralNetwork
 
 
 class Metrics():
-    def __init__(self, model=None):
-        if model == None or not isinstance(model, NeuralNetwork):
-            return Exception("Error: there is no neuralnetwork provided.")
+    def __init__(self, model=None, graph=None):
+        if (model == None or not isinstance(model, NeuralNetwork)) and graph == None:
+            print("Error: there is no neuralnetwork provided.")
 
-        self.train_losses = model.train_losses
-    
+        if model != None:
+            self.train_losses = model.train_losses
+
+        if graph != None:
+            self.graph = graph
+
+
+    def plot_graph_evolution(self, metric_key="local_accuracy", title=f"Graph of node accuracy evolution"):
+        plt.figure(figsize=(12, 8))
+
+        for i, node in self.graph.nodes(data=True):
+            if metric_key in node:
+                plt.plot(node[metric_key], label=f"Node {i}")
+
+        plt.xlabel('Rounds')
+        plt.ylabel(metric_key.capitalize())
+        plt.title(title)
+        plt.legend(title='Nodes')
+        plt.grid(True)
+        plt.show()
+        return plt
     
     def plot_training_loss(self):
         df_metrics = pd.DataFrame({'Epoch': range(1, len(self.train_losses) + 1), 'Loss': self.train_losses})
