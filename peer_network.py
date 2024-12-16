@@ -6,6 +6,7 @@ import torch
 from neural_network import NeuralNetwork
 from utils.metrics import Metrics
 from utils.preprocessor import Preprocessor
+import copy
 
 class PeerNetwork:
     def __init__(self):
@@ -17,7 +18,7 @@ class PeerNetwork:
         
         
     def initialize_seed_model(self):
-        file_path = 'datasets\Merged_dataset\w1_incomplete.csv'
+        file_path = 'datasets/Merged_dataset/w1_incomplete.csv'
         
         preprocessor = Preprocessor(file_path)
         preprocessor.load_labels()
@@ -56,10 +57,12 @@ class PeerNetwork:
             preprocessor.load_labels()
             X_train, X_test, y_train, y_test = preprocessor.process()
             train_loader, test_loader = preprocessor.create_loaders(X_train, y_train, X_test, y_test)
+        
+            copy_model = copy.deepcopy(self.seed_model)
 
             graph.add_node(
                 i,
-                model=self.seed_model,
+                model=copy_model,
                 train_loader=train_loader,
                 local_test=test_loader,
                 seed_test_loader=self.test_loader,
@@ -69,7 +72,6 @@ class PeerNetwork:
 
         edges = [(0, 1), (1, 2), (2, 3), (3, 4), (4, 0)]
         graph.add_edges_from(edges)
-
         return graph
         
     def distill_knowledge(self, num_rounds=5, temperature=2.0, alpha=0.5):
@@ -120,6 +122,10 @@ class PeerNetwork:
                 print(f"Evaluating student model AFTER distillation (Node {student_node}):")
                 accuracy = student_model.evaluate(self.graph.nodes[student_node]['local_test'])
                 print(f"Accuracy is {accuracy:.2f}%")
+
+                if round_num == num_rounds-1:
+                    self.plot_metrics(student_model, self.graph.nodes[student_node]['local_test'], self.graph.nodes[student_node]['y_test_local'], path="results/node_after/plot_node" + str(i))
+
                 
         
     def plot_metrics(self, model, test_loader, y_test, path="results"):
